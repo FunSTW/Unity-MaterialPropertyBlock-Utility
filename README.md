@@ -1,5 +1,5 @@
 # MaterialPropertyBlockUtility
- ✨ Unity Set Material Property Block Utility for GPU Instancing
+ ✨ Easy to set up Material Property Block
  
  ![image](https://github.com/FunsTW/Unity_MaterialPropertyBlockUtility/blob/main/Preview.png?raw=true)
 ## 💡 Reference
