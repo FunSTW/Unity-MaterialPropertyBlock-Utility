@@ -6,5 +6,5 @@
 ## System requirements
 * Unity 2019.3 or above
 
-## 💡 Reference
+## Reference
  * SerializeReference https://medium.com/@trepala.aleksander/serializereference-in-unity-b4ee10274f48
