@@ -17,14 +17,7 @@ using UnityEngine;
         prop.SetFloat(ReferenceName, value);
     }
 }
-[Serializable] public class Matrix4x4Property : Property
-{
-    [SerializeField] private Matrix4x4 value = default;
-
-    public override void Set(MaterialPropertyBlock prop) {
-        prop.SetMatrix(ReferenceName, value);
-    }
-}
+// Matrix4x4 https://www.reddit.com/r/Unity3D/comments/dtxntl/shaders_how_do_i_use_the_matrix_from/
 [Serializable] public class ColorProperty : Property
 {
     [SerializeField] private Color value = default;
