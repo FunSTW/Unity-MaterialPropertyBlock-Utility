@@ -25,7 +25,7 @@ public class SetMaterialPropertyBlock : MonoBehaviour
     public List<IProperty> CurrentSettings => m_overrideSettings ? m_overrideSettings.m_properties : m_properties;
 
 #if UNITY_EDITOR
-    private void OnValidate() {
+    public void OnValidate() {
         if(!m_meshRenderer) m_meshRenderer = GetComponent<MeshRenderer>();
         if(ExecuteInEditor) { 
             ApplyCurrentSetting();

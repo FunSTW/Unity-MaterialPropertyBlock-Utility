@@ -28,8 +28,23 @@ class SetMaterialPropertyBlockEditor : Editor
         if(target == null) {
             return;
         }
-        EditorGUILayout.PropertyField(ExecuteInEditor);
+        
         bool isOverrideSetting = overrideSettings.objectReferenceValue != null;
+
+        GUILayout.BeginHorizontal("Box");
+
+        EditorGUILayout.PropertyField(ExecuteInEditor);
+
+        if(!ExecuteInEditor.boolValue) GUI.enabled = false;
+        if(GUILayout.Button("Force Update", GUILayout.Width(120))) {
+            for(int i = 0; i < targets.Length; i++) {
+                var tempTarget = targets[i] as SetMaterialPropertyBlock;
+                tempTarget.OnValidate();
+            }
+        }
+        if(!ExecuteInEditor.boolValue) GUI.enabled = true;
+
+        GUILayout.EndHorizontal();
 
         if(_implementations == null) {
             //this is probably the most imporant part:
