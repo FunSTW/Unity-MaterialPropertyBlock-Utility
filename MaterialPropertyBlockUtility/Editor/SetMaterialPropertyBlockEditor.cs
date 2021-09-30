@@ -13,10 +13,12 @@ class SetMaterialPropertyBlockEditor : Editor
 
     private SerializedProperty overrideSettings;
     private SerializedProperty m_properties;
+    private SerializedProperty ExecuteInEditor;
 
     private void OnEnable() {
         overrideSettings = serializedObject.FindProperty("m_overrideSettings");
         m_properties = serializedObject.FindProperty("m_properties");
+        ExecuteInEditor = serializedObject.FindProperty("ExecuteInEditor");
     }
 
     public override void OnInspectorGUI() {
@@ -26,12 +28,13 @@ class SetMaterialPropertyBlockEditor : Editor
         if(target == null) {
             return;
         }
+        EditorGUILayout.PropertyField(ExecuteInEditor);
         bool isOverrideSetting = overrideSettings.objectReferenceValue != null;
 
         if(_implementations == null) {
             //this is probably the most imporant part:
             //find all implementations of INode using System.Reflection.Module
-            _implementations = GetImplementations<IProperty>().Where(impl => !impl.IsSubclassOf(typeof(UnityEngine.Object))).ToArray();
+            _implementations = GetImplementations<IProperty>().Where(impl => !impl.IsSubclassOf(typeof(UnityEngine.Object))).OrderBy(c => c.Name).ToArray();
         }
 
         GUIStyle Header = new GUIStyle(EditorStyles.boldLabel);
@@ -48,8 +51,14 @@ class SetMaterialPropertyBlockEditor : Editor
         if(GUILayout.Button("Create",GUILayout.Width(60))) {
             //set new value
             var prop = (IProperty)Activator.CreateInstance(_implementations[_implementationTypeIndex]);
-            prop.InspectorName = $"{prop.ReferenceName} ({prop.GetType()})";
-            target.GetCurrentSetting.Add(prop);
+            if(!isOverrideSetting) {
+                for(int i = 0; i < targets.Length; i++) {
+                    var tempTarget = targets[i] as SetMaterialPropertyBlock;
+                    tempTarget.CurrentSettings.Add(prop);
+                }
+            } else {
+                target.CurrentSettings.Add(prop);
+            }
         }
 
         GUILayout.EndHorizontal();
@@ -65,7 +74,10 @@ class SetMaterialPropertyBlockEditor : Editor
         GUILayout.BeginHorizontal();
         EditorGUILayout.PropertyField(overrideSettings, new GUIContent("Override Setting Scriptable Object"));
         if(GUILayout.Button("Close",GUILayout.Width(50))) {
-            target.OverrideSettings = null;
+            for(int i = 0; i < targets.Length; i++) {
+                var tempTarget = targets[i] as SetMaterialPropertyBlock;
+                tempTarget.OverrideSettings = null;
+            }
         }
         GUILayout.EndHorizontal();
 
@@ -100,7 +112,17 @@ class SetMaterialPropertyBlockEditor : Editor
         //    _implementations = GetImplementations<IProperty>().Where(impl => !impl.IsSubclassOf(typeof(UnityEngine.Object))).ToArray();
         //}
 
+        RefreshListName(target.CurrentSettings);
+
         serializedObject.ApplyModifiedProperties();
+    }
+
+    void RefreshListName(List<IProperty> currentSettings) {
+        if(currentSettings == null || currentSettings.Count == 0) return;
+        foreach(var item in currentSettings) {
+            if(item == null) continue;
+            item.InspectorName = $"{item.ReferenceName} ({item.GetType()})";
+        }
     }
 
     private static Type[] GetImplementations<T>() {

@@ -2,8 +2,13 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshRenderer))]
+[ExecuteAlways]
 public class SetMaterialPropertyBlock : MonoBehaviour
 {
+#if UNITY_EDITOR
+    [SerializeField] bool ExecuteInEditor = false;
+#endif
+
     MeshRenderer m_meshRenderer = null;
     [SerializeField] PropertyScriptableObject m_overrideSettings = null;
     [SerializeReference] List<IProperty> m_properties = new List<IProperty>();
@@ -17,29 +22,38 @@ public class SetMaterialPropertyBlock : MonoBehaviour
         }
     }
 
-    public List<IProperty> GetCurrentSetting => m_overrideSettings ? m_overrideSettings.m_properties : m_properties;
+    public List<IProperty> CurrentSettings => m_overrideSettings ? m_overrideSettings.m_properties : m_properties;
+
+#if UNITY_EDITOR
+    private void OnValidate() {
+        if(!m_meshRenderer) m_meshRenderer = GetComponent<MeshRenderer>();
+        if(ExecuteInEditor) { 
+            ApplyCurrentSetting();
+        }
+    }
+#endif
 
     void Start() {
         m_meshRenderer = GetComponent<MeshRenderer>();
-        if(m_overrideSettings != null) {
-            Apply(m_overrideSettings.m_properties);
-        } else {
-            Apply(m_properties);
-        }
+        ApplyCurrentSetting();
     }
 
-    public void Apply(List<IProperty> m_properties) {
-        if(Check(m_properties)) { return; }
+    public void ApplyCurrentSetting() {
+        Apply(CurrentSettings,m_meshRenderer);
+    }
+
+    static void Apply(List<IProperty> properties,MeshRenderer meshRenderer) {
+        if(!Check(properties, meshRenderer)) { return; }
         var prop = new MaterialPropertyBlock();
-        m_meshRenderer.GetPropertyBlock(prop);
-        foreach(var propValue in m_overrideSettings.m_properties) {
+        meshRenderer.GetPropertyBlock(prop);
+        foreach(var propValue in properties) {
             propValue.Set(prop);
         }
-        m_meshRenderer.SetPropertyBlock(prop);
+        meshRenderer.SetPropertyBlock(prop);
     }
 
-    bool Check(List<IProperty> m_properties) {
-        bool check = !m_meshRenderer && m_properties.Count != 0;
+    static bool Check(List<IProperty> m_properties, MeshRenderer m_meshRenderer) {
+        bool check = m_meshRenderer != null && m_properties.Count != 0;
         return check;
     }
 }
