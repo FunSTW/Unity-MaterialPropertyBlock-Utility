@@ -9,4 +9,7 @@
 * Unity 2019.3 or above `[SerializeReference]`
 
 ## Reference
- * SerializeReference https://medium.com/@trepala.aleksander/serializereference-in-unity-b4ee10274f48
+ * SerializeReference for editor https://medium.com/@trepala.aleksander/serializereference-in-unity-b4ee10274f48
+ * SerializeReference Attribute? https://forum.unity.com/threads/serializereference-attribute.678868/
+ * GPU Instancing https://docs.unity3d.com/Manual/GPUInstancing.html
+ * Texture 2D Array Import setting https://docs.unity3d.com/Manual/TextureTypes.html
