@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(MeshRenderer))]
 [ExecuteAlways]
 public class SetMaterialPropertyBlock : MonoBehaviour
 {
@@ -9,7 +8,7 @@ public class SetMaterialPropertyBlock : MonoBehaviour
     [SerializeField] bool ExecuteInEditor = false;
 #endif
 
-    MeshRenderer m_meshRenderer = null;
+    [SerializeField] Renderer m_renderer = null;
     [SerializeField] PropertyScriptableObject m_overrideSettings = null;
     [SerializeReference] List<IProperty> m_properties = new List<IProperty>();
 
@@ -26,34 +25,38 @@ public class SetMaterialPropertyBlock : MonoBehaviour
 
 #if UNITY_EDITOR
     public void OnValidate() {
-        if(!m_meshRenderer) m_meshRenderer = GetComponent<MeshRenderer>();
-        if(ExecuteInEditor) { 
+        GetRequired();
+        if(ExecuteInEditor) {
             ApplyCurrentSetting();
         }
     }
 #endif
 
     void Start() {
-        m_meshRenderer = GetComponent<MeshRenderer>();
+        GetRequired();
         ApplyCurrentSetting();
     }
 
-    public void ApplyCurrentSetting() {
-        Apply(CurrentSettings,m_meshRenderer);
+    void GetRequired() {
+        if(!m_renderer) m_renderer = GetComponent<Renderer>();
     }
 
-    static void Apply(List<IProperty> properties,MeshRenderer meshRenderer) {
-        if(!Check(properties, meshRenderer)) { return; }
+    public void ApplyCurrentSetting() {
+        Apply(CurrentSettings,m_renderer);
+    }
+
+    static void Apply(List<IProperty> properties,Renderer renderer) {
+        if(!Check(properties, renderer)) { return; }
         var prop = new MaterialPropertyBlock();
-        meshRenderer.GetPropertyBlock(prop);
+        renderer.GetPropertyBlock(prop);
         foreach(var propValue in properties) {
             propValue.Set(prop);
         }
-        meshRenderer.SetPropertyBlock(prop);
+        renderer.SetPropertyBlock(prop);
     }
 
-    static bool Check(List<IProperty> m_properties, MeshRenderer m_meshRenderer) {
-        bool check = m_meshRenderer != null && m_properties.Count != 0;
+    static bool Check(List<IProperty> properties, Renderer renderer) {
+        bool check = renderer != null && properties.Count != 0;
         return check;
     }
 }

@@ -11,14 +11,16 @@ class SetMaterialPropertyBlockEditor : Editor
     private Type[] _implementations;
     private int _implementationTypeIndex;
 
-    private SerializedProperty overrideSettings;
+    private SerializedProperty m_renderer;
+    private SerializedProperty m_overrideSettings;
     private SerializedProperty m_properties;
-    private SerializedProperty ExecuteInEditor;
+    private SerializedProperty m_ExecuteInEditor;
 
     private void OnEnable() {
-        overrideSettings = serializedObject.FindProperty("m_overrideSettings");
+        m_renderer = serializedObject.FindProperty("m_renderer");
+        m_overrideSettings = serializedObject.FindProperty("m_overrideSettings");
         m_properties = serializedObject.FindProperty("m_properties");
-        ExecuteInEditor = serializedObject.FindProperty("ExecuteInEditor");
+        m_ExecuteInEditor = serializedObject.FindProperty("ExecuteInEditor");
     }
 
     public override void OnInspectorGUI() {
@@ -29,22 +31,38 @@ class SetMaterialPropertyBlockEditor : Editor
             return;
         }
         
-        bool isOverrideSetting = overrideSettings.objectReferenceValue != null;
+        bool isOverrideSetting = m_overrideSettings.objectReferenceValue != null;
 
-        GUILayout.BeginHorizontal("Box");
+        GUILayout.BeginVertical("Box");
 
-        EditorGUILayout.PropertyField(ExecuteInEditor);
+        bool haveRenderer = m_renderer.objectReferenceValue == null;
 
-        if(!ExecuteInEditor.boolValue) GUI.enabled = false;
+        if(haveRenderer) {
+            EditorGUILayout.HelpBox("Require Renderer Component", MessageType.Error);
+        }
+
+        GUI.enabled = haveRenderer;
+
+        EditorGUILayout.ObjectField(m_renderer);
+
+        GUI.enabled = true;
+
+        GUILayout.BeginHorizontal();
+
+        EditorGUILayout.PropertyField(m_ExecuteInEditor);
+
+        if(!m_ExecuteInEditor.boolValue) GUI.enabled = false;
         if(GUILayout.Button("Force Update", GUILayout.Width(120))) {
             for(int i = 0; i < targets.Length; i++) {
                 var tempTarget = targets[i] as SetMaterialPropertyBlock;
                 tempTarget.OnValidate();
             }
         }
-        if(!ExecuteInEditor.boolValue) GUI.enabled = true;
+        if(!m_ExecuteInEditor.boolValue) GUI.enabled = true;
 
         GUILayout.EndHorizontal();
+
+        GUILayout.EndVertical();
 
         if(_implementations == null) {
             //this is probably the most imporant part:
@@ -87,7 +105,7 @@ class SetMaterialPropertyBlockEditor : Editor
         EditorGUI.indentLevel += 1;
 
         GUILayout.BeginHorizontal();
-        EditorGUILayout.PropertyField(overrideSettings, new GUIContent("Override Setting Scriptable Object"));
+        EditorGUILayout.PropertyField(m_overrideSettings, new GUIContent("Override Setting Scriptable Object"));
         if(GUILayout.Button("Close",GUILayout.Width(50))) {
             for(int i = 0; i < targets.Length; i++) {
                 var tempTarget = targets[i] as SetMaterialPropertyBlock;
@@ -107,7 +125,7 @@ class SetMaterialPropertyBlockEditor : Editor
 
         if(isOverrideSetting) {
             Editor _propertyScriptableObjectEditor = null;
-            CreateCachedEditor(this.overrideSettings.objectReferenceValue, null, ref _propertyScriptableObjectEditor);
+            CreateCachedEditor(this.m_overrideSettings.objectReferenceValue, null, ref _propertyScriptableObjectEditor);
             if(_propertyScriptableObjectEditor) {
                 _propertyScriptableObjectEditor.OnInspectorGUI();
             }
