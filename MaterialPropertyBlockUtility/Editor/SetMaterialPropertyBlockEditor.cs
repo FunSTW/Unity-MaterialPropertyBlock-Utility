@@ -33,7 +33,27 @@ class SetMaterialPropertyBlockEditor : Editor
         
         bool isOverrideSetting = m_overrideSettings.objectReferenceValue != null;
 
-        GUILayout.BeginVertical("Box");
+        GUILayout.BeginHorizontal("Box");
+
+        EditorGUILayout.PropertyField(m_ExecuteInEditor);
+
+        if(!m_ExecuteInEditor.boolValue) GUI.enabled = false;
+        if(GUILayout.Button("Force Update", GUILayout.Width(90))) {
+            for(int i = 0; i < targets.Length; i++) {
+                var tempTarget = targets[i] as SetMaterialPropertyBlock;
+                tempTarget.OnValidate();
+            }
+        }
+        if(!m_ExecuteInEditor.boolValue) GUI.enabled = true;
+
+        if(GUILayout.Button("Clear Data", GUILayout.Width(80))) {
+            for(int i = 0; i < targets.Length; i++) {
+                var tempTarget = targets[i] as SetMaterialPropertyBlock;
+                tempTarget.ClearBlockData();
+            }
+        }
+
+        GUILayout.EndHorizontal();
 
         bool haveRenderer = m_renderer.objectReferenceValue == null;
 
@@ -47,23 +67,6 @@ class SetMaterialPropertyBlockEditor : Editor
 
         GUI.enabled = true;
 
-        GUILayout.BeginHorizontal();
-
-        EditorGUILayout.PropertyField(m_ExecuteInEditor);
-
-        if(!m_ExecuteInEditor.boolValue) GUI.enabled = false;
-        if(GUILayout.Button("Force Update", GUILayout.Width(120))) {
-            for(int i = 0; i < targets.Length; i++) {
-                var tempTarget = targets[i] as SetMaterialPropertyBlock;
-                tempTarget.OnValidate();
-            }
-        }
-        if(!m_ExecuteInEditor.boolValue) GUI.enabled = true;
-
-        GUILayout.EndHorizontal();
-
-        GUILayout.EndVertical();
-
         if(_implementations == null) {
             //this is probably the most imporant part:
             //find all implementations of INode using System.Reflection.Module
@@ -71,9 +74,19 @@ class SetMaterialPropertyBlockEditor : Editor
         }
 
         GUIStyle Header = new GUIStyle(EditorStyles.boldLabel);
-        EditorGUILayout.LabelField("Setting", Header);
+        EditorGUILayout.LabelField("Properties Setting", Header);
 
         EditorGUI.indentLevel += 1;
+
+        GUILayout.BeginHorizontal();
+        EditorGUILayout.PropertyField(m_overrideSettings, new GUIContent("Override Setting Scriptable Object"));
+        if(GUILayout.Button("Close", GUILayout.Width(60))) {
+            for(int i = 0; i < targets.Length; i++) {
+                var tempTarget = targets[i] as SetMaterialPropertyBlock;
+                tempTarget.OverrideSettings = null;
+            }
+        }
+        GUILayout.EndHorizontal();
 
         GUILayout.BeginHorizontal();
         
@@ -94,24 +107,6 @@ class SetMaterialPropertyBlockEditor : Editor
             }
         }
 
-        GUILayout.EndHorizontal();
-
-        EditorGUI.indentLevel -= 1;
-
-        EditorGUILayout.LabelField("Property", Header);
-
-        /*-------------------------*/
-
-        EditorGUI.indentLevel += 1;
-
-        GUILayout.BeginHorizontal();
-        EditorGUILayout.PropertyField(m_overrideSettings, new GUIContent("Override Setting Scriptable Object"));
-        if(GUILayout.Button("Close",GUILayout.Width(50))) {
-            for(int i = 0; i < targets.Length; i++) {
-                var tempTarget = targets[i] as SetMaterialPropertyBlock;
-                tempTarget.OverrideSettings = null;
-            }
-        }
         GUILayout.EndHorizontal();
 
         GUIStyle SOArea = new GUIStyle(EditorStyles.helpBox);

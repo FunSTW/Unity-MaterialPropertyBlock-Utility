@@ -42,21 +42,25 @@ public class SetMaterialPropertyBlock : MonoBehaviour
     }
 
     public void ApplyCurrentSetting() {
-        Apply(CurrentSettings,m_renderer);
-    }
+        List<IProperty> properties = CurrentSettings;
 
-    static void Apply(List<IProperty> properties,Renderer renderer) {
-        if(!Check(properties, renderer)) { return; }
+        if(m_renderer == null || properties.Count == 0) return;
+
         var prop = new MaterialPropertyBlock();
-        renderer.GetPropertyBlock(prop);
+        m_renderer.GetPropertyBlock(prop);
         foreach(var propValue in properties) {
             propValue.Set(prop);
         }
-        renderer.SetPropertyBlock(prop);
+        m_renderer.SetPropertyBlock(prop);
     }
 
-    static bool Check(List<IProperty> properties, Renderer renderer) {
-        bool check = renderer != null && properties.Count != 0;
-        return check;
+    public void ClearBlockData() {
+        Renderer renderer = m_renderer;
+
+        if(renderer == null) { return; }
+        var prop = new MaterialPropertyBlock();
+        renderer.GetPropertyBlock(prop);
+        prop.Clear();
+        renderer.SetPropertyBlock(prop);
     }
 }
